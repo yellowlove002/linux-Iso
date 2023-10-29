@@ -1,0 +1,1116 @@
+exercise2
+
+sudo apt update
+sudo apt install default-jdk
+
+import java.util.Scanner;
+
+class BankDetails {
+	private String accno;
+	private String name;
+	private String acc_type;
+	private long balance;
+	Scanner sc = new Scanner(System.in);
+
+	public void openAccount() {
+		System.out.print("Enter Account No: ");
+		accno = sc.next();
+		System.out.print("Enter Account type: ");
+		acc_type = sc.next();
+		System.out.print("Enter Name: ");
+		name = sc.next();
+		System.out.print("Enter Balance: ");
+		balance = sc.nextLong();
+	}
+
+	public void showAccount() {
+		System.out.println("Name of account holder: " + name);
+		System.out.println("Account no.: " + accno);
+		System.out.println("Account type: " + acc_type);
+		System.out.println("Balance: " + balance);
+	}
+
+	public void deposit() {
+		long amt;
+		System.out.println("Enter the amount you want to deposit: ");
+		amt = sc.nextLong();
+		balance = balance + amt;
+	}
+
+	public void withdrawal() {
+		long amt;
+
+		System.out.println("Enter the amount you want to withdraw: ");
+		amt = sc.nextLong();
+		if (balance >= amt) {
+			balance = balance - amt;
+			System.out.println("Balance after withdrawal: " + balance);
+		} else {
+			System.out.println("Your balance is less than " + amt + "\tTransaction failed...!!");
+		}
+	}
+
+	public boolean search(String ac_no) {
+		if (accno.equals(ac_no)) {
+			showAccount();
+			return (true);
+		}
+		return (false);
+	}
+}
+
+public class BankingApp {
+	public static void main(String arg[]) {
+		Scanner sc = new Scanner(System.in);
+		// create initial accounts
+		System.out.print("How many number of customers do you want to input?");
+
+		int n = sc.nextInt();
+		BankDetails C[] = new BankDetails[n];
+		for (int i = 0; i < C.length; i++) {
+			C[i] = new BankDetails();
+			C[i].openAccount();
+
+		}
+
+		int ch;
+		do {
+			System.out.println("\n ***Banking System Application***");
+
+			System.out.println(
+					"1. Display all account details \n 2. Search by Account number\n 3. Deposit the amount \n 4. Withdraw the amount \n 5.Exit ");
+			System.out.println("Enter your choice: ");
+			ch = sc.nextInt();
+			switch (ch) {
+				case 1:
+					for (int i = 0; i < C.length; i++) {
+						C[i].showAccount();
+					}
+					break;
+				case 2:
+					System.out.print("Enter account no. you want to search: ");
+					String ac_no = sc.next();
+					boolean found = false;
+					for (int i = 0; i < C.length; i++) {
+						found = C[i].search(ac_no);
+						if (found) {
+							break;
+						}
+					}
+					if (!found) {
+						System.out.println("Search failed! Account doesn't exist..!!");
+					}
+					break;
+				case 3:
+					System.out.print("Enter Account no. : ");
+					ac_no = sc.next();
+					found = false;
+					for (int i = 0; i < C.length; i++) {
+						found = C[i].search(ac_no);
+						if (found) {
+							C[i].deposit();
+							break;
+						}
+					}
+					if (!found) {
+						System.out.println("Search failed! Account doesn't exist..!!");
+					}
+					break;
+
+				case 4:
+					System.out.print("Enter Account No : ");
+					ac_no = sc.next();
+					found = false;
+					for (int i = 0; i < C.length; i++) {
+						found = C[i].search(ac_no);
+						if (found) {
+							C[i].withdrawal();
+							break;
+						}
+					}
+					if (!found) {
+						System.out.println("Search failed! Account doesn't exist..!!");
+					}
+					break;
+				case 5:
+					System.out.println("See you soon...");
+					break;
+			}
+		} while (ch != 5);
+	}
+}
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+exercise3 sjf
+
+//package sjf;
+import java.text.DecimalFormat;
+import java.util.*;
+
+import org.cloudbus.cloudsim.*;
+import org.cloudbus.cloudsim.core.CloudSim;
+import org.cloudbus.cloudsim.provisioners.*;
+
+/**
+ * An example showing how to create
+ * scalable simulations.
+ */
+public class CloudSimExample3 {
+
+	/** The cloudlet list. */
+	private static List<Cloudlet> cloudletList, cloudletListSJF;
+
+	/** The vmlist. */
+	private static List<Vm> vmlist;
+
+	private static List<Vm> createVM(int userId, int vms) {
+
+		//Creates a container to store VMs. This list is passed to the broker later
+		LinkedList<Vm> list = new LinkedList<Vm>();
+
+		//VM Parameters
+		long size = 10000; //image size (MB)
+		int ram = 512; //vm memory (MB)
+		int mips = 1000;
+		long bw = 1000;
+		int pesNumber = 1; //number of cpus
+		String vmm = "Xen"; //VMM name
+
+		//create VMs
+		Vm[] vm = new Vm[vms];
+
+		for(int i=0;i<vms;i++){
+			vm[i] = new Vm(i, userId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerSpaceShared());
+			//for creating a VM with a space shared scheduling policy for cloudlets:
+			//vm[i] = Vm(i, userId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerSpaceShared());
+
+			list.add(vm[i]);
+		}
+
+		return list;
+	}
+
+	private static List<Cloudlet> createCloudlet(int userId, int cloudlets,int shift){
+		// Creates a container to store Cloudlets
+		LinkedList<Cloudlet> list = new LinkedList<Cloudlet>();
+
+		//cloudlet parameters
+		long length = 1000;
+		long fileSize = 300;
+		long outputSize = 300;
+		int pesNumber = 1;
+		UtilizationModel utilizationModel = new UtilizationModelFull();
+
+		Cloudlet[] cloudlet = new Cloudlet[cloudlets];
+                long len[]=new long[]{1000, 600, 720, 530, 900, 450, 300, 250};
+		for(int i=0;i<cloudlets;i++){
+			cloudlet[i] = new Cloudlet(shift+i, len[i], pesNumber, fileSize, outputSize, utilizationModel, utilizationModel, utilizationModel);
+			// setting the owner of these Cloudlets
+			cloudlet[i].setUserId(userId);
+			list.add(cloudlet[i]);
+		}
+		return list;
+	}
+        
+        private static void getCloudletListSJF(List<Cloudlet> clist)
+	{
+		int min=0;
+		for (int i=0; i<clist.size();i++)
+			if (clist.get(i).getCloudletLength() < clist.get(min).getCloudletLength())
+				min=i;
+		cloudletListSJF.add(clist.get(min));
+		clist.remove(min);
+		if (clist.size()!=0)
+			getCloudletListSJF(clist);
+	}
+
+	////////////////////////// STATIC METHODS ///////////////////////
+
+	/**
+	 * Creates main() to run this example
+	 */
+	public static void main(String[] args) {
+		Log.printLine("Starting CloudSimSJF...");
+
+		try {
+			// First step: Initialize the CloudSim package. It should be called
+			// before creating any entities.
+			int num_user = 3;   // number of grid users
+			Calendar calendar = Calendar.getInstance();
+			boolean trace_flag = false;  // mean trace events
+
+			// Initialize the CloudSim library
+			CloudSim.init(num_user, calendar, trace_flag);
+
+			// Second step: Create Datacenters
+			//Datacenters are the resource providers in CloudSim. We need at list one of them to run a CloudSim simulation
+			Datacenter datacenter0 = createDatacenter("Datacenter_0");
+			Datacenter datacenter1 = createDatacenter("Datacenter_1");
+
+			//Third step: Create Broker
+			DatacenterBroker broker = createBroker();
+			int brokerId = broker.getId();
+
+			//Fourth step: Create VMs and Cloudlets and send them to broker
+			vmlist = createVM(brokerId,2); //creating 2 vms
+			cloudletList = createCloudlet(brokerId,8,0); // creating 8 cloudlets
+
+			broker.submitVmList(vmlist);
+			cloudletListSJF=new LinkedList<Cloudlet>();
+                        getCloudletListSJF(cloudletList);
+
+                        broker.submitCloudletList(cloudletListSJF);
+			// Fifth step: Starts the simulation
+			CloudSim.startSimulation();
+
+			// Final step: Print results when simulation is over
+			List<Cloudlet> newList = broker.getCloudletReceivedList();
+
+			CloudSim.stopSimulation();
+
+			printCloudletList(newList);
+
+			Log.printLine("CloudSimSJF finished!");
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			Log.printLine("The simulation has been terminated due to an unexpected error");
+		}
+	}
+
+	private static Datacenter createDatacenter(String name){
+
+		// Here are the steps needed to create a PowerDatacenter:
+		// 1. We need to create a list to store one or more
+		//    Machines
+		List<Host> hostList = new ArrayList<Host>();
+
+		// 2. A Machine contains one or more PEs or CPUs/Cores. Therefore, should
+		//    create a list to store these PEs before creating
+		//    a Machine.
+		List<Pe> peList1 = new ArrayList<Pe>();
+
+		int mips = 1000;
+
+		// 3. Create PEs and add these into the list.
+		//for a quad-core machine, a list of 4 PEs is required:
+		peList1.add(new Pe(0, new PeProvisionerSimple(mips))); // need to store Pe id and MIPS Rating
+		peList1.add(new Pe(1, new PeProvisionerSimple(mips)));
+		peList1.add(new Pe(2, new PeProvisionerSimple(mips)));
+		peList1.add(new Pe(3, new PeProvisionerSimple(mips)));
+
+		//Another list, for a dual-core machine
+		List<Pe> peList2 = new ArrayList<Pe>();
+
+		peList2.add(new Pe(0, new PeProvisionerSimple(mips)));
+		peList2.add(new Pe(1, new PeProvisionerSimple(mips)));
+
+		//4. Create Hosts with its id and list of PEs and add them to the list of machines
+		int hostId=0;
+		int ram = 2048; //host memory (MB)
+		long storage = 1000000; //host storage
+		int bw = 10000;
+
+		hostList.add(
+    			new Host(
+    				hostId,
+    				new RamProvisionerSimple(ram),
+    				new BwProvisionerSimple(bw),
+    				storage,
+    				peList1,
+    				new VmSchedulerTimeShared(peList1)
+    			)
+    		); // This is our first machine
+
+		hostId++;
+
+		hostList.add(
+    			new Host(
+    				hostId,
+    				new RamProvisionerSimple(ram),
+    				new BwProvisionerSimple(bw),
+    				storage,
+    				peList2,
+    				new VmSchedulerTimeShared(peList2)
+    			)
+    		); // Second machine
+
+		// 5. Create a DatacenterCharacteristics object that stores the
+		//    properties of a data center: architecture, OS, list of
+		//    Machines, allocation policy: time- or space-shared, time zone
+		//    and its price (G$/Pe time unit).
+		String arch = "x86";      // system architecture
+		String os = "Linux";          // operating system
+		String vmm = "Xen";
+		double time_zone = 10.0;         // time zone this resource located
+		double cost = 3.0;              // the cost of using processing in this resource
+		double costPerMem = 0.05;		// the cost of using memory in this resource
+		double costPerStorage = 0.1;	// the cost of using storage in this resource
+		double costPerBw = 0.1;			// the cost of using bw in this resource
+		LinkedList<Storage> storageList = new LinkedList<Storage>();	//we are not adding SAN devices by now
+
+		DatacenterCharacteristics characteristics = new DatacenterCharacteristics(
+                arch, os, vmm, hostList, time_zone, cost, costPerMem, costPerStorage, costPerBw);
+
+		// 6. Finally, we need to create a PowerDatacenter object.
+		Datacenter datacenter = null;
+		try {
+			datacenter = new Datacenter(name, characteristics, new VmAllocationPolicySimple(hostList), storageList, 0);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return datacenter;
+	}
+
+	//We strongly encourage users to develop their own broker policies, to submit vms and cloudlets according
+	//to the specific rules of the simulated scenario
+	private static DatacenterBroker createBroker(){
+
+		
+		DatacenterBroker broker = null;
+		try {
+			broker = new DatacenterBroker("Broker");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		return broker;
+	}
+
+	/**
+	 * Prints the Cloudlet objects
+	 * @param list  list of Cloudlets
+	 */
+	@SuppressWarnings("deprecation")
+	private static void printCloudletList(List<Cloudlet> list) {
+		int size = list.size();
+		Cloudlet cloudlet;
+
+		String indent = "    ";
+		Log.printLine();
+		Log.printLine("========== OUTPUT ==========");
+		Log.printLine("Cloudlet ID" + indent + "STATUS" + indent +
+				"Data center ID" + indent + "VM ID" + indent + "Time" + indent + "Start Time" + indent + "Finish Time" +indent);
+
+		DecimalFormat dft = new DecimalFormat("###.##");
+		for (int i = 0; i < size; i++) {
+			cloudlet = list.get(i);
+			Log.print(indent + cloudlet.getCloudletId() + indent + indent);
+
+			if (cloudlet.getCloudletStatus() == Cloudlet.SUCCESS){
+				Log.print("SUCCESS");
+
+				Log.printLine( indent + indent + cloudlet.getResourceId() + indent + indent + indent + indent + cloudlet.getVmId() +
+						indent + indent + dft.format(cloudlet.getActualCPUTime()) +
+						indent + indent + dft.format(cloudlet.getExecStartTime())+ indent + indent + indent + dft.format(cloudlet.getFinishTime())+indent );
+				
+								
+			}
+		}
+
+	}
+}
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+exercise4 bfs
+
+//package bestfit;
+import java.text.DecimalFormat;
+import java.util.*;
+import org.cloudbus.cloudsim.*;
+import org.cloudbus.cloudsim.core.CloudSim;
+import org.cloudbus.cloudsim.provisioners.*;
+public class CloudSimExample4 {
+private static List<Cloudlet> cloudletList,cloudletListbft;
+private static List<Vm> vmlist;
+private static List<Vm> createVM(int userId, int vms, int idShift) {
+LinkedList<Vm> list = new LinkedList<Vm>();
+ 
+long size = 1000; //image size (MB)
+int ram = 512; //vm memory (MB)
+int mips = 550;
+long bw = 1000;
+int pesNumber = 1; //number of cpus
+String vmm = "Xen"; //VMM name
+ int p=1;
+//create VMs
+Vm[] vm = new Vm[vms]; 
+ Random r= new Random();
+for(int i=0;i<vms;i++){
+ vm[i] = new Vm(idShift + i, userId, mips+r.nextInt(100), pesNumber, ram, bw, size, 
+vmm, new CloudletSchedulerSpaceShared());
+ 
+ list.add(vm[i]);
+}
+ Comparator<Vm> comparator = Comparator.comparing(Vm::getMips).reversed();
+ list.sort(comparator); 
+ 
+return list;
+}
+private static List<Cloudlet> createCloudlet(int userId, int cloudlets) {
+LinkedList<Cloudlet> list = new LinkedList<Cloudlet>();
+long length = 3000;
+long fileSize = 300;
+long outputSize = 300;
+int pesNumber = 1;
+UtilizationModel utilizationModel = new UtilizationModelFull();
+Cloudlet[] cloudlet = new Cloudlet[cloudlets];
+for(int i=0;i<cloudlets;i++){
+ Random r= new Random();
+cloudlet[i] = new Cloudlet(i, length +r.nextInt(6000), pesNumber, fileSize, 
+outputSize, utilizationModel, utilizationModel, utilizationModel);
+cloudlet[i].setUserId(userId);
+list.add(cloudlet[i]);
+ Log.printLine("cloudletlist size = " +cloudlet[i].getCloudletTotalLength());
+}
+return list;
+}
+private static void CloudletListBF(List<Cloudlet> Blist) {
+int temp=0;
+for (int i=0; i<Blist.size();i++)
+if (Blist.get(i).getCloudletLength() < Blist.get(temp).getCloudletLength())
+temp=i;
+cloudletListbft.add(Blist.get(temp));
+Blist.remove(temp);
+if (Blist.size()!=0)
+CloudletListBF(Blist);
+}
+public static void main(String[] args) {
+Log.printLine("Starting CloudSimTest Bestfit...");
+try {
+int num_user = 1; 
+Calendar calendar = Calendar.getInstance();
+boolean trace_flag = false; 
+CloudSim.init(num_user, calendar, trace_flag);
+Datacenter datacenter0 = createDatacenter("Datacenter_0");
+ int vms = 8;
+ int cloudlets=8;
+DatacenterBroker broker = createBroker("Broker_0");
+int brokerId = broker.getId();
+ 
+ System.out.println("Broker ID: "+brokerId);
+vmlist = createVM(brokerId, vms, 0);
+broker.submitVmList(vmlist);
+ 
+cloudletList = createCloudlet(brokerId, cloudlets); 
+Log.printLine("cloudletlist size = " + cloudletList.size());
+ System.out.println("----------------------------------------\n"+cloudletList.get(0));
+cloudletListbft = new LinkedList<Cloudlet>();
+CloudletListBF(cloudletList); 
+broker.submitCloudletList(cloudletListbft);
+CloudSim.startSimulation();
+List<Cloudlet> newList = broker.getCloudletReceivedList();
+CloudSim.stopSimulation();
+ printCloudletList(newList);
+ 
+ Log.printLine("CloudSimTest Bestfit finished!");
+}
+catch (Exception e) {
+e.printStackTrace();
+Log.printLine("The simulation has been terminated due to an unexpected error");
+}
+}
+private static Datacenter createDatacenter(String name){
+List<Host> hostList = new ArrayList<Host>();
+List<Pe> List1 = new ArrayList<Pe>();
+int mips = 102400;
+List1.add(new Pe(0, new PeProvisionerSimple(mips))); // need to store Pe id and MIPS Rating
+List1.add(new Pe(1, new PeProvisionerSimple(mips)));
+List1.add(new Pe(2, new PeProvisionerSimple(mips)));
+List1.add(new Pe(3, new PeProvisionerSimple(mips)));
+List<Pe> List2 = new ArrayList<Pe>();
+List2.add(new Pe(0, new PeProvisionerSimple(mips)));
+List2.add(new Pe(1, new PeProvisionerSimple(mips)));
+ List2.add(new Pe(2, new PeProvisionerSimple(mips)));
+List2.add(new Pe(3, new PeProvisionerSimple(mips)));
+int hostId=0;
+int ram = 102400; //host memory (MB)
+long storage = 1000000; //host storage
+int bw = 200000;
+hostList.add(
+ new Host(
+ hostId,
+ new RamProvisionerSimple(ram),
+ new BwProvisionerSimple(bw),
+ storage,
+ List1,
+ new VmSchedulerTimeShared(List1)
+ )
+ ); // This is our first machine
+hostId++;
+ 
+String arch = "x86"; // system architecture
+String os = "Linux"; // operating system
+String vmm = "Xen";
+double time_zone = 10.0; // time zone this resource located
+double cost = 3.0; // the cost of using processing in this resource
+double costPerMem = 0.05; // the cost of using memory in this resource
+double costPerStorage = 0.1; // the cost of using storage in this resource
+double costPerBw = 0.1; // the cost of using bw in this resource
+LinkedList<Storage> storageList = new LinkedList<Storage>(); //we are not adding SAN devices by now
+DatacenterCharacteristics characteristics = new DatacenterCharacteristics(
+ arch, os, vmm, hostList, time_zone, cost, costPerMem, costPerStorage, costPerBw);
+ 
+Datacenter datacenter = null;
+try {
+datacenter = new Datacenter(name, characteristics, new 
+VmAllocationPolicySimple(hostList), storageList, 0);
+} catch (Exception e) {
+e.printStackTrace();
+}
+return datacenter;
+}
+private static DatacenterBroker createBroker(String name){
+DatacenterBroker broker = null;
+try {
+broker = new DatacenterBroker(name);
+} catch (Exception e) {
+e.printStackTrace();
+return null;
+}
+return broker;
+}
+private static void printCloudletList(List<Cloudlet> list) {
+int size = list.size();
+Cloudlet cloudlet;
+Log.printLine();
+Log.printLine("========== OUTPUT ==========");
+Log.printLine("Cloudlet ID" + " " + "STATUS" + " " +
+"Data center ID" + " " + "VM ID" + " " + " " + "Time" + " " 
++ "Start Time" + " " + "Finish Time"+ " "+" Cloudlet Length");
+DecimalFormat dft = new DecimalFormat("###.##");
+for (int i = 0; i < size; i++) {
+cloudlet = list.get(i);
+Log.print(" " + cloudlet.getCloudletId() + " " + " ");
+if (cloudlet.getCloudletStatus() == Cloudlet.SUCCESS){
+Log.print("SUCCESS"); 
+Log.printLine( " " + " " + cloudlet.getResourceId() + " " + " " + " " 
+ + cloudlet.getVmId() +" " + " " + " " + 
+dft.format(cloudlet.getActualCPUTime()) +" " + " " 
+ + dft.format(cloudlet.getExecStartTime())+ " " + " " + " " + 
+dft.format(cloudlet.getFinishTime()) + " " + " " + dft.format(cloudlet.getCloudletLength()));
+ 
+ }
+ else {
+ Log.print("Failure");
+ } 
+}
+ Log.printLine(" " + "VM ID" + " " + " " + "MIPS" + " " + " " + "PEs" + " " 
++ "RAM" + " " + "Bw"+ " "+"Cloudlet Scheduler");
+ 
+ for(Vm vm : vmlist) {
+ Log.printLine(" " +vm.getId() + " " + " " + " " + vm.getMips() + " " + " " 
+ + vm.getNumberOfPes()+ " " + " " + " " + vm.getRam() + " " + " " + 
+vm.getBw()+ " " +" "+" "+vm.getCloudletScheduler().getClass().getSimpleName());
+ 
+ }
+}
+}
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+exercise5 fcfs
+
+//package fcfs;
+import java.text.DecimalFormat;
+import java.util.*;
+
+import org.cloudbus.cloudsim.*;
+import org.cloudbus.cloudsim.core.CloudSim;
+import org.cloudbus.cloudsim.provisioners.*;
+
+/**
+ * An example showing how to create
+ * scalable simulations.
+ */
+public class CloudSimExample5 {
+
+	/** The cloudlet list. */
+	private static List<Cloudlet> cloudletList;
+
+	/** The vmlist. */
+	private static List<Vm> vmlist;
+
+	private static List<Vm> createVM(int userId, int vms) {
+
+		//Creates a container to store VMs. This list is passed to the broker later
+		LinkedList<Vm> list = new LinkedList<Vm>();
+
+		//VM Parameters
+		long size = 10000; //image size (MB)
+		int ram = 512; //vm memory (MB)
+		int mips = 1000;
+		long bw = 1000;
+		int pesNumber = 1; //number of cpus
+		String vmm = "Xen"; //VMM name
+
+		//create VMs
+		Vm[] vm = new Vm[vms];
+
+		for(int i=0;i<vms;i++){
+			vm[i] = new Vm(i, userId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerSpaceShared());
+			//for creating a VM with a space shared scheduling policy for cloudlets:
+			//vm[i] = Vm(i, userId, mips, pesNumber, ram, bw, size, priority, vmm, new CloudletSchedulerSpaceShared());
+
+			list.add(vm[i]);
+		}
+		return list;
+	}
+
+	private static List<Cloudlet> createCloudlet(int userId, int cloudlets, int shift){
+		// Creates a container to store Cloudlets
+		LinkedList<Cloudlet> list = new LinkedList<Cloudlet>();
+
+		//cloudlet parameters
+		long length = 100;
+		long fileSize = 300;
+		long outputSize = 300;
+		int pesNumber = 1;
+		UtilizationModel utilizationModel = new UtilizationModelFull();
+
+		Cloudlet[] cloudlet = new Cloudlet[cloudlets];
+                long len[]=new long[]{460, 330, 180, 560, 910, 690, 270, 110};
+		for(int i=0;i<cloudlets;i++){
+			cloudlet[i] = new Cloudlet(shift+i, len[i], pesNumber, fileSize, outputSize, utilizationModel, utilizationModel, utilizationModel);
+			// setting the owner of these Cloudlets
+			cloudlet[i].setUserId(userId);
+			list.add(cloudlet[i]);
+		}
+		return list;
+	}
+
+
+	////////////////////////// STATIC METHODS ///////////////////////
+
+	/**
+	 * Creates main() to run this example
+	 */
+	public static void main(String[] args) {
+		Log.printLine("Starting CloudSimFCFS...");
+
+		try {
+			// First step: Initialize the CloudSim package. It should be called
+			// before creating any entities.
+			int num_user = 1;   // number of grid users
+			Calendar calendar = Calendar.getInstance();
+			boolean trace_flag = false;  // mean trace events
+
+			// Initialize the CloudSim library
+			CloudSim.init(num_user, calendar, trace_flag);
+
+			// Second step: Create Datacenters
+			//Datacenters are the resource providers in CloudSim. We need at list one of them to run a CloudSim simulation
+			@SuppressWarnings("unused")
+			Datacenter datacenter0 = createDatacenter("Datacenter_0");
+			@SuppressWarnings("unused")
+			Datacenter datacenter1 = createDatacenter("Datacenter_1");
+
+			//Third step: Create Broker
+			DatacenterBroker broker = createBroker();
+			int brokerId = broker.getId();
+
+			//Fourth step: Create VMs and Cloudl1ets and send them to broker
+			vmlist = createVM(brokerId,2); //creating 8 vms
+			cloudletList = createCloudlet(brokerId,8,0); // creating 8 cloudlets
+
+			broker.submitVmList(vmlist);
+			broker.submitCloudletList(cloudletList);
+
+			// Fifth step: Starts the simulation
+			CloudSim.startSimulation();
+
+			// Final step: Print results when simulation is over
+			List<Cloudlet> newList = broker.getCloudletReceivedList();
+			List<Vm> newList1 = broker.getVmsCreatedList();
+
+			CloudSim.stopSimulation();
+
+			printCloudletList(newList,newList1);
+                        
+                        Log.printLine("CloudsimFCFS Finished!");
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			Log.printLine("The simulation has been terminated due to an unexpected error");
+		}
+	}
+
+	private static Datacenter createDatacenter(String name){
+
+		// Here are the steps needed to create a PowerDatacenter:
+		// 1. We need to create a list to store one or more
+		//    Machines
+		List<Host> hostList = new ArrayList<Host>();
+
+		// 2. A Machine contains one or more PEs or CPUs/Cores. Therefore, should
+		//    create a list to store these PEs before creating
+		//    a Machine.
+		List<Pe> peList1 = new ArrayList<Pe>();
+
+		int mips = 10000;
+
+		// 3. Create PEs and add these into the list.
+		//for a quad-core machine, a list of 4 PEs is required:
+		peList1.add(new Pe(0, new PeProvisionerSimple(mips + 500))); // need to store Pe id and MIPS Rating
+		peList1.add(new Pe(1, new PeProvisionerSimple(mips + 1000)));
+		peList1.add(new Pe(2, new PeProvisionerSimple(mips + 1500)));
+		peList1.add(new Pe(3, new PeProvisionerSimple(mips + 700)));
+
+		//Another list, for a dual-core machine
+		List<Pe> peList2 = new ArrayList<Pe>();
+
+		peList2.add(new Pe(0, new PeProvisionerSimple(mips + 700)));
+		peList2.add(new Pe(1, new PeProvisionerSimple(mips + 900)));
+
+		//4. Create Hosts with its id and list of PEs and add them to the list of machines
+                int hostId=0;
+		int ram = 1002048; //host memory (MB)
+		long storage = 1000000; //host storage
+		int bw = 100000;
+		hostList.add(
+    			new Host(
+    				hostId,
+    				new RamProvisionerSimple(ram),
+    				new BwProvisionerSimple(bw),
+    				storage,
+    				peList1,
+    				new VmSchedulerTimeShared(peList1)
+    			)
+    		); // This is our first machine
+
+		hostId++;
+
+		hostList.add(
+    			new Host(
+    				hostId,
+    				new RamProvisionerSimple(ram),
+    				new BwProvisionerSimple(bw),
+    				storage,
+    				peList2,
+    				new VmSchedulerTimeShared(peList2)
+    			)
+    		); // Second machine
+
+		// 5. Create a DatacenterCharacteristics object that stores the
+		//    properties of a data center: architecture, OS, list of
+		//    Machines, allocation policy: time- or space-shared, time zone
+		//    and its price (G$/Pe time unit).
+		String arch = "x86";      // system architecture
+		String os = "Linux";          // operating system
+		String vmm = "Xen";
+		double time_zone = 10.0;         // time zone this resource located
+		double cost = 3.0;              // the cost of using processing in this resource
+		double costPerMem = 0.05;		// the cost of using memory in this resource
+		double costPerStorage = 0.1;	// the cost of using storage in this resource
+		double costPerBw = 0.1;			// the cost of using bw in this resource
+		LinkedList<Storage> storageList = new LinkedList<Storage>();	//we are not adding SAN devices by now
+
+		DatacenterCharacteristics characteristics = new DatacenterCharacteristics(
+                arch, os, vmm, hostList, time_zone, cost, costPerMem, costPerStorage, costPerBw);
+
+		// 6. Finally, we need to create a PowerDatacenter object.
+		Datacenter datacenter = null;
+		try {
+			datacenter = new Datacenter(name, characteristics, new VmAllocationPolicySimple(hostList), storageList, 0);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return datacenter;
+	}
+
+	//We strongly encourage users to develop their own broker policies, to submit vms and cloudlets according
+	//to the specific rules of the simulated scenario
+	private static DatacenterBroker createBroker(){
+
+		DatacenterBroker broker = null;
+		try {
+			broker = new DatacenterBroker("Broker");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		return broker;
+	}
+
+	/**
+	 * Prints the Cloudlet objects
+	 * @param list  list of Cloudlets
+	 */
+	private static void printCloudletList(List<Cloudlet> list,List<Vm> list1) {
+		int size = list.size();
+		Cloudlet cloudlet;
+		
+		String indent = "    ";
+		Log.printLine();
+                Log.printLine("========== OUTPUT ==========");
+		Log.printLine("Cloudlet ID" + indent + "STATUS" + indent +
+				"Data center ID" + indent + "VM ID" + indent + indent + "Time" + indent + "Start Time" + indent + "Finish Time");
+
+		DecimalFormat dft = new DecimalFormat("###.##");
+		
+		for (int i = 0; i < size; i++) {
+			cloudlet = list.get(i);
+			Log.print(indent + cloudlet.getCloudletId() + indent + indent);
+
+			if (cloudlet.getCloudletStatus() == Cloudlet.SUCCESS){
+				 Log.print("SUCCESS");
+
+				Log.printLine( indent + indent + cloudlet.getResourceId() + 
+						indent + indent + indent + cloudlet.getVmId() +
+						indent + indent + indent + dft.format(cloudlet.getActualCPUTime()) +
+						indent + indent + dft.format(cloudlet.getExecStartTime())+
+						indent + indent + indent + dft.format(cloudlet.getFinishTime()));
+			}
+		}
+	
+	}
+}
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+exercise6 aws vm, python-currency converter
+
+sudo apt-get update
+sudo apt install xrdp
+sudo systemctl enable xrdp
+sudo add-apt-repository ppa:gnome3-team/gnome3
+sudo apt-get install gnome-shell ubuntu-gnome-desktop
+sudo passwd ubuntu
+
+sudo apt-get install python3
+sudo apt-get install python3-tk
+
+
+
+/*import tkinter*/
+def convert_currency():
+    amount = float(amount_entry.get())
+    from_currency = from_currency_entry.get().upper()
+    to_currency = to_currency_entry.get().upper()
+
+    if from_currency not in exchange_rates or to_currency not in exchange_rates:
+        result_label.config(text="Currency not supported")
+    else:
+        conversion_rate = exchange_rates[to_currency] / exchange_rates[from_currency]
+        converted_amount = amount * conversion_rate
+        result_label.config(text=f"{amount} {from_currency} is equal to {converted_amount:.2f} {to_currency}")
+exchange_rates = {
+    "USD": 1.0,
+    "EUR": 0.926,
+    "JPY": 146.00,
+    "GBP": 0.794,
+    "INR": 82.694
+}
+window = tkinter.Tk()
+window.title("Currency Converter")
+
+amount_label = tkinter.Label(window, text="Enter the amount:")
+amount_label.pack()
+amount_entry = tkinter.Entry(window)
+amount_entry.pack()
+
+from_currency_label = tkinter.Label(window, text="Enter the source currency (e.g., USD, EUR, JPY, GBP, INR):")
+from_currency_label.pack()
+from_currency_entry = tkinter.Entry(window)
+from_currency_entry.pack()
+
+to_currency_label = tkinter.Label(window, text="Enter the target currency (e.g., USD, EUR, JPY, GBP, INR):")
+to_currency_label.pack()
+to_currency_entry = tkinter.Entry(window)
+to_currency_entry.pack()
+
+convert_button = tkinter.Button(window, text="Convert", command=convert_currency)
+convert_button.pack()
+
+result_label = tkinter.Label(window, text="")
+result_label.pack()
+window.mainloop()
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+exercise7 aws webhosting
+
+
+sudo apt-get update
+sudo apt install xrdp
+sudo systemctl enable xrdp
+sudo add-apt-repository ppa:gnome3-team/gnome3
+sudo apt-get install gnome-shell ubuntu-gnome-desktop
+sudo passwd ubuntu
+
+sudo apt-get install apache2
+sudo systemctl start apache2 
+
+cd /var/www/html/
+vi index.html
+<h1>hi </h1>
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+
+exercise8 gc mysql
+
+
+add these line in config.inc.php
+
+$i++;
+$cfg['Servers'][$i]['host'] = '';
+$cfg['Servers'][$i]['user'] = '';
+$cfg['Servers'][$i]['password'] = '';
+$cfg['Servers'][$i]['auth_type'] = 'config';
+
+
+
+gcloud config set project <>
+gcloud sql connect cloud --user=cloud
+
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Student Information</title>
+</head>
+<body>
+	<center>
+		<h1>Student Information</h1>
+		<form method="POST" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+			<label for="name">Name:</label>
+			<input type="text" name="name" required><br>
+
+			<label for="dept">Department:</label>
+			<input type="text" name="dept" required><br>
+
+			<input type="submit" name="submit" value="Insert">
+		</form>
+		<?php
+$servername = "34.93.115.151";
+$username = "cloud";
+$password = "cloud123";
+$dbname = "cloud";
+
+$conn = new mysqli($servername, $username, $password);
+
+if ($conn->connect_error) {
+	die("Connection failed: " . $conn->connect_error);
+}
+
+$createDbSql = "CREATE DATABASE IF NOT EXISTS $dbname";
+if ($conn->query($createDbSql) === TRUE) {
+	echo "Database created successfully or already exists.<br>";
+} else {
+	echo "Error creating database: " . $conn->error;
+}
+
+$conn->select_db($dbname);
+
+$createTableSql = "CREATE TABLE IF NOT EXISTS students (
+    studentID INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    Department VARCHAR(255) NOT NULL
+)";
+if ($conn->query($createTableSql) === TRUE) {
+	echo "Table created successfully or already exists.<br>";
+} else {
+	echo "Error creating table: " . $conn->error;
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+	$name = $_POST["name"];
+	$dept = $_POST["dept"];
+
+	$insertSql = "INSERT INTO students (name, Department) VALUES ('$name', '$dept')";
+
+	if ($conn->query($insertSql) === TRUE) {
+		echo "Student information saved successfully.<br>";
+	} else {
+		echo "Error: " . $insertSql . "<br>" . $conn->error;
+	}
+}
+
+$conn->close();
+?>
+	</center>
+</body>
+</html>
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+exercise9 azure python-salary
+
+
+sudo apt-get update
+sudo DEBIAN_FRONTEND=noninteractive apt-get -y install xfce4
+sudo apt install xfce4-session
+sudo apt-get -y install xrdp
+sudo systemctl enable xrdp
+echo xfce4-session >~/.xsession
+sudo service xrdp restart
+sudo passwd azureuser
+
+or
+
+
+sudo apt-get update
+sudo apt install xrdp
+sudo systemctl enable xrdp
+sudo add-apt-repository ppa:gnome3-team/gnome3
+sudo apt-get install gnome-shell ubuntu-gnome-desktop
+sudo passwd azureuser
+
+
+
+
+sudo apt-get install python3
+sudo apt-get install python3-matplotlib
+
+
+import pandas as pd
+import numby as np
+import matplotlib.pyplot as plt
+
+data = pd.read_csv('data.csv')
+numerical.plot(kind = 'scatter', x='Age', y='Salary')
+numerical.plot(kind = 'scatter', x='exp', y='Salary')
+sns.heatmap(data.corr(), annot = True)
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+exercise10 aws s3 api
+
+import boto3
+import time
+import urllib
+import json
+
+AWS_ACCESS_KEY_ID = 'AKIATUSNVAXNZON62DHQ'
+AWS_SECRET_ACCESS_KEY = '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'
+
+job_name = 'demo'
+job_uri = 's3://songnew/Bloody Sweet - Leo - SamWep.mp3'
+
+transcribe = boto3.client('transcribe', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY, region_name='ap-south-1')
+
+transcribe.start_transcription_job(TranscriptionJobName=job_name, Media={'MediaFileUri': job_uri}, MediaFormat='mp3', LanguageCode='en-US')
+while True:
+    status = transcribe.get_transcription_job(TranscriptionJobName=job_name)
+    if status['TranscriptionJob']['TranscriptionJobStatus'] in ['COMPLETED', 'FAILED']:
+        break
+    print("Not ready yet...")
+    time.sleep(2)
+if status['TranscriptionJob']['TranscriptionJobStatus'] == 'COMPLETED':
+  response = urllib.request.urlopen(status['TranscriptionJob']['Transcript']['TranscriptFileUri'])
+  data = json.loads(response.read())
+  text = data['results']['transcripts'][0]['transcript']
+  print(text)
+
+
+
+s3://leodoss098/Ordinary-Person-MassTamilan.dev.mp3
