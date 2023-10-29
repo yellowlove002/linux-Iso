@@ -1,0 +1,215 @@
+Create a composer.json file in your project directory if it doesn't already exist.
+
+Open the composer.json file and paste the following content into it:
+______composer.json____
+{
+    "require": {
+        "aws/aws-sdk-php": "^3.0"
+    }
+}
+________________________________
+
+Run the following command in cmd:
+
+composer install
+
+_________________________________
+
+
+
+
+
+******************using php calling the aws service of Celebrity Detection*********
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Celebrity Detection</title>
+</head>
+<body>
+    <h1>Celebrity Detection</h1>
+    <form action="celeprocess.php" method="post" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/*">
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
+
+<?php
+require 'vendor/autoload.php';
+
+use Aws\Rekognition\RekognitionClient;
+
+if (isset($_FILES['image']) && $_FILES['image']['error'] == UPLOAD_ERR_OK) {
+    $imagePath = $_FILES['image']['tmp_name'];
+
+    // Initialize the AWS SDK
+    $rekognition = new RekognitionClient([
+        'version' => 'latest',
+        'region' => 'us-east-1', // Change this to your desired region
+        'credentials' => [
+            'key' => 'AKIA47BE65RQ32CC335T',
+            'secret' => 'Hz1ZL62TGm5Ns2SHtVj5Rihf4WQd8ybJuPzmBrGo',
+        ],
+    ]);
+
+    // Use Amazon Rekognition to recognize celebrities in the uploaded image
+    $result = $rekognition->recognizeCelebrities([
+        'Image' => [
+            'Bytes' => file_get_contents($imagePath),
+        ],
+    ]);
+
+    // Process the celebrity recognition result
+    $celebrities = $result['CelebrityFaces'];
+
+    echo '<h2>Celebrities in the image:</h2>';
+    echo '<ul>';
+    if (!empty($celebrities)) {
+        foreach ($celebrities as $celebrity) {
+            echo '<li>' . $celebrity['Name'] . '</li>';
+        }
+    } else {
+        echo '<li>No celebrities recognized in the image.</li>';
+    }
+    echo '</ul>';
+} else {
+    echo 'Please select a valid image file.';
+}
+?>
+
+************************************************************************************
+
+******************using php calling the aws service of text in image************
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Text Recognition</title>
+</head>
+<body>
+    <h1>Text Recognition</h1>
+    <form action="texttoimage.php" method="post" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/*">
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
+
+____texttoimage.php___
+<?php
+require 'vendor/autoload.php';
+
+use Aws\Rekognition\RekognitionClient;
+
+if (isset($_FILES['image']) && $_FILES['image']['error'] == UPLOAD_ERR_OK) {
+    $imagePath = $_FILES['image']['tmp_name'];
+
+    // Initialize the AWS SDK
+    $rekognition = new RekognitionClient([
+        'version' => 'latest',
+        'region' => 'us-east-1', // Change this to your desired region
+        'credentials' => [
+            'key' => 'AKIA47BE65RQ32CC335T',
+            'secret' => 'Hz1ZL62TGm5Ns2SHtVj5Rihf4WQd8ybJuPzmBrGo',
+        ],
+    ]);
+
+    // Use Amazon Rekognition to detect text in the uploaded image
+    $result = $rekognition->detectText([
+        'Image' => [
+            'Bytes' => file_get_contents($imagePath),
+        ],
+    ]);
+
+    // Process the text recognition result
+    $textDetections = $result['TextDetections'];
+
+    echo '<h2>Text in the image:</h2>';
+    echo '<ul>';
+    if (!empty($textDetections)) {
+        foreach ($textDetections as $textDetection) {
+            echo '<li>' . $textDetection['DetectedText'] . '</li>';
+        }
+    } else {
+        echo '<li>No text detected in the image.</li>';
+    }
+    echo '</ul>';
+} else {
+    echo 'Please select a valid image file.';
+}
+?>
+
+*************************************************************************
+
+
+******************using php calling the aws service of Objects in image************
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Object Detection</title>
+</head>
+<body bgcolor="grey"><center>
+    <h1>Object Detection</h1><hr>
+    <table border=2>  <colgroup>
+    <col span="1" style="background-color: white">
+  </colgroup><tr><th><br><br><br><br><h3><form action="process_image.php" method="post" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/*"><br><br><br><br>
+        <input type="submit" value="Submit">
+    </form></h3></th></tr></table></center>
+</body>
+</html>
+
+<html>
+<body bgcolor=white>
+<?php
+require 'vendor/autoload.php';
+
+use Aws\Rekognition\RekognitionClient;
+
+if (isset($_FILES['image']) && $_FILES['image']['error'] == UPLOAD_ERR_OK) {
+    $imagePath = $_FILES['image']['tmp_name'];
+
+    // Initialize the AWS SDK
+    $rekognition = new RekognitionClient([
+        'version' => 'latest',
+        'region' => 'us-east-1', // Change this to your desired region
+        'credentials' => [
+            'key' => 'AKIA47BE65RQ32CC335T',
+            'secret' => 'Hz1ZL62TGm5Ns2SHtVj5Rihf4WQd8ybJuPzmBrGo',
+        ],
+    ]);
+
+    // Use Amazon Rekognition to detect objects in the uploaded image
+    $result = $rekognition->detectLabels([
+        'Image' => [
+            'Bytes' => file_get_contents($imagePath),
+        ],
+    ]);
+
+    // Process the result to extract object names
+    $objectNames = [];
+    foreach ($result['Labels'] as $label) {
+        $objectNames[] = $label['Name'];
+    }
+
+    // Display the object names in a box
+    echo '<div class="container">';
+echo '<h2>Objects in the image:</h2>';
+?><hr><table border=2><tr><th><?php
+    
+    echo '<div class="result-box">';
+    foreach ($objectNames as $object) {
+        echo '<div class="result-item">' . $object . '</div>';
+    }
+    echo '</div>';
+    echo '</div>';
+} else {
+    echo 'Please select a valid image file.';
+}
+?></th></tr></table><center>
+</body>
+</html>
+
+
+***********************************************************************************
